@@ -1,3 +1,5 @@
+#include <SD.h>
+
 // Arduino9x_RX
 // -*- mode: C++ -*-
 // Example sketch showing how to create a simple messaging client (receiver)

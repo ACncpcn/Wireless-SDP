@@ -86,7 +86,7 @@ MPU6050 mpu;
 // uncomment "OUTPUT_READABLE_QUATERNION" if you want to see the actual
 // quaternion components in a [w, x, y, z] format (not best for parsing
 // on a remote host such as Processing or something though)
-#define OUTPUT_READABLE_QUATERNION
+//#define OUTPUT_READABLE_QUATERNION
 
 // uncomment "OUTPUT_READABLE_EULER" if you want to see Euler angles
 // (in degrees) calculated from the quaternions coming from the FIFO.
@@ -99,7 +99,7 @@ MPU6050 mpu;
 // from the FIFO. Note this also requires gravity vector calculations.
 // Also note that yaw/pitch/roll angles suffer from gimbal lock (for
 // more info, see: http://en.wikipedia.org/wiki/Gimbal_lock)
-#define OUTPUT_READABLE_YAWPITCHROLL
+//#define OUTPUT_READABLE_YAWPITCHROLL
 
 // uncomment "OUTPUT_READABLE_REALACCEL" if you want to see acceleration
 // components with gravity removed. This acceleration reference frame is
@@ -297,19 +297,20 @@ void loop() {
             Serial.print("\t");
             Serial.print(q.y);
             Serial.print("\t");
-            Serial.println(q.z);
+            Serial.print(q.z);
         #endif
 
         #ifdef OUTPUT_READABLE_EULER
             // display Euler angles in degrees
             mpu.dmpGetQuaternion(&q, fifoBuffer);
             mpu.dmpGetEuler(euler, &q);
-            Serial.print("euler\t");
-            Serial.print(euler[0] * 180/M_PI);
+            //Serial.print("euler\t");
+            Serial.print(euler[0] * 180/M_PI); //rotation about x
             Serial.print("\t");
-            Serial.print(euler[1] * 180/M_PI);
-            Serial.print("\t");
-            Serial.println(euler[2] * 180/M_PI);
+            //Serial.print(euler[1] * 180/M_PI);
+            //Serial.print("\t");
+            //Serial.print(euler[2] * 180/M_PI);
+            //Serial.print("\t");
         #endif
 
         #ifdef OUTPUT_READABLE_YAWPITCHROLL
@@ -322,7 +323,7 @@ void loop() {
             Serial.print("\t");
             Serial.print(ypr[1] * 180/M_PI);
             Serial.print("\t");
-            Serial.println(ypr[2] * 180/M_PI);
+            Serial.print(ypr[2] * 180/M_PI);
         #endif
 
         #ifdef OUTPUT_READABLE_REALACCEL
@@ -331,12 +332,14 @@ void loop() {
             mpu.dmpGetAccel(&aa, fifoBuffer);
             mpu.dmpGetGravity(&gravity, &q);
             mpu.dmpGetLinearAccel(&aaReal, &aa, &gravity);
-            Serial.print("areal\t");
+            //Serial.print("areal\t");
             Serial.print(aaReal.x);
-            Serial.print("\t");
-            Serial.print(aaReal.y);
-            Serial.print("\t");
-            Serial.println(aaReal.z);
+            //Serial.print("\t");
+            //Serial.print(aaReal.y);
+            //Serial.print("\t");
+            //Serial.println(aaReal.z);
+
+            //Serial.print(aa.x);
         #endif
 
         #ifdef OUTPUT_READABLE_WORLDACCEL
@@ -368,6 +371,8 @@ void loop() {
             Serial.write(teapotPacket, 14);
             teapotPacket[11]++; // packetCount, loops at 0xFF on purpose
         #endif
+
+        Serial.print("\n");
 
         // blink LED to indicate activity
         blinkState = !blinkState;

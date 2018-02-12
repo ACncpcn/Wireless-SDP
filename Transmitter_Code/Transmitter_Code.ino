@@ -6,7 +6,7 @@
 // level messaging abilities.
 // It is designed to work with the other example LoRa9x_RX
 
-
+//                      MPU
 #include <I2Cdev.h>
 #include "I2Cdev.h"
 #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
@@ -38,7 +38,7 @@ void dmpDataReady() {
     mpuInterrupt = true;
 }
 
-
+//
 #include <SPI.h>
 #include <RH_RF95.h>
 
@@ -106,7 +106,7 @@ void setup()
   digitalWrite(RFM95_RST, HIGH);
 
   while (!Serial);
-  Serial.begin(115200);
+  Serial.begin(9600);
   delay(100);
 
   Serial.println("Arduino LoRa TX Test!");
@@ -156,7 +156,7 @@ void loop()
     mpuIntStatus = mpu.getIntStatus();
 
     // get current FIFO count
-    fifoCount = mpu.getFIFOCount();
+    //fifoCount = mpu.getFIFOCount();
 
     // check for overflow (this should never happen unless our code is too inefficient)
     if ((mpuIntStatus & 0x10) || fifoCount == 1024) {
@@ -196,29 +196,37 @@ void loop()
         #endif
 
         Serial.print("\n");
-
     }
 
 
   //                  LoRa
-  Serial.println("Sending to rf95_server");
+  //Serial.println("Sending to rf95_server");
   // Send a message to rf95_server
   
-  char radiopacket[20] = "65llo World #      ";
-  itoa(packetnum++, radiopacket+13, 10);
-  Serial.print("Sending "); Serial.println(radiopacket);
-  radiopacket[19] = 0;
+  //char radiopacket[20] = "65llo World #      ";
+  //itoa(packetnum++, radiopacket+13, 10);
+  //Serial.print("Sending "); Serial.println(radiopacket);
+  //radiopacket[19] = 0;
+
+  char accelpack[6];
+  sprintf(accelpack, "%d", aaReal.x);
+
+  char anglepack[12];
+  sprintf(anglepack, "%d", euler[0] * 180/M_PI);
+
+  char finalpack[20] = ;
+  Serial.print("Sending "); Serial.println(finalpack);
   
   Serial.println("Sending..."); delay(10);
-  rf95.send((uint8_t *)radiopacket, 20);
+  rf95.send((uint8_t *)finalpack, 20);
 
-  Serial.println("Waiting for packet to complete..."); delay(10);
+  Serial.println("Waiting for packet to complete..."); //delay(10);
   rf95.waitPacketSent();
   // Now wait for a reply
   uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
   uint8_t len = sizeof(buf);
 
-  Serial.println("Waiting for reply..."); delay(10);
+  //Serial.println("Waiting for reply..."); //delay(10);
   if (rf95.waitAvailableTimeout(1000))
   { 
     // Should be a reply message for us now   
@@ -238,5 +246,5 @@ void loop()
   {
     Serial.println("No reply, is there a listener around?");
   }
-  delay(1000);
+  //delay(1000);
 }

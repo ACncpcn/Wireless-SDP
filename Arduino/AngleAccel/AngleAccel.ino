@@ -336,8 +336,8 @@ void loop() {
             //Serial.print(aaReal.x);
             //Serial.print("\t");
             Serial.print(aaReal.y);
-            //Serial.print("\t");
-            //Serial.println(aaReal.z);
+            Serial.print("\t");
+            Serial.println(aaReal.z);
 
             //Serial.print(aa.x);
         #endif

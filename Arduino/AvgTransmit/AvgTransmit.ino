@@ -109,7 +109,7 @@ void setup()
   Serial.begin(115200);
   delay(100);
 
-  Serial.println("Arduino LoRa TX Test!");
+  //Serial.println("Arduino LoRa TX Test!");
 
   // manual reset
   digitalWrite(RFM95_RST, LOW);
@@ -144,59 +144,90 @@ void loop()
 {
 
   //                    MPU   
- // if programming failed, don't try to do anything
+    // if programming failed, don't try to do anything
     if (!dmpReady) return;
 
-    // wait for MPU interrupt or extra packet(s) available
-    while (!mpuInterrupt && fifoCount < packetSize) {
+    unsigned char nloop = 10;
+    int angleavg = 0;
+    int accelyavg = 0;
+    int accelzavg = 0;
+
+    for ( unsigned char i = 0; i < nloop; ++i){
+      // wait for MPU interrupt or extra packet(s) available
+      while (!mpuInterrupt && fifoCount < packetSize) {
+      }
+  
+      // reset interrupt flag and get INT_STATUS byte
+      mpuInterrupt = false;
+      mpuIntStatus = mpu.getIntStatus();
+  
+      // get current FIFO count
+      fifoCount = mpu.getFIFOCount();
+  
+      // check for overflow (this should never happen unless our code is too inefficient)
+      if ((mpuIntStatus & 0x10) || fifoCount == 1024) {
+          // reset so we can continue cleanly
+          mpu.resetFIFO();
+          Serial.println(F("FIFO overflow!"));
+  
+      // otherwise, check for DMP data ready interrupt (this should happen frequently)
+      } else if (mpuIntStatus & 0x02) {
+          // wait for correct available data length, should be a VERY short wait
+          while (fifoCount < packetSize) fifoCount = mpu.getFIFOCount();
+  
+          // read a packet from FIFO
+          mpu.getFIFOBytes(fifoBuffer, packetSize);
+          mpu.resetFIFO();
+          
+          // track FIFO count here in case there is > 1 packet available
+          // (this lets us immediately read more without waiting for an interrupt)
+          fifoCount -= packetSize;
+  
+          #ifdef OUTPUT_READABLE_EULER
+              // display Euler angles in degrees
+              mpu.dmpGetQuaternion(&q, fifoBuffer);
+              mpu.dmpGetEuler(euler, &q);
+              //Serial.print("euler\t");
+              //Serial.print(euler[0] * 180/M_PI); //rotation about x
+              //Serial.print("\t");
+              //Serial.print(euler[1] * 180/M_PI);
+              //Serial.print("\t");
+              //Serial.print(euler[2] * 180/M_PI);
+              //Serial.print("\t");
+          #endif
+  
+          #ifdef OUTPUT_READABLE_REALACCEL
+              // display real acceleration, adjusted to remove gravity
+              mpu.dmpGetQuaternion(&q, fifoBuffer);
+              mpu.dmpGetAccel(&aa, fifoBuffer);
+              mpu.dmpGetGravity(&gravity, &q);
+              mpu.dmpGetLinearAccel(&aaReal, &aa, &gravity);
+              //Serial.print("areal\t");
+              //Serial.print(aaReal.x);
+              //Serial.print("\t");
+              //Serial.print(aaReal.y);
+              //Serial.print("\t");
+              //Serial.println(aaReal.z);
+  
+              //Serial.print(aa.x);
+          #endif
+    
+          //Serial.print("\n");
+
+          angleavg += (euler[0] * 180/M_PI)/nloop;
+          accelyavg += aaReal.y/nloop;          
+          accelzavg += aaReal.z/nloop;
+      }
+
     }
 
-    // reset interrupt flag and get INT_STATUS byte
-    mpuInterrupt = false;
-    mpuIntStatus = mpu.getIntStatus();
-
-    // get current FIFO count
-    //fifoCount = mpu.getFIFOCount();
-
-    // check for overflow (this should never happen unless our code is too inefficient)
-    if ((mpuIntStatus & 0x10) || fifoCount == 1024) {
-        // reset so we can continue cleanly
-        mpu.resetFIFO();
-        //Serial.println(F("FIFO overflow!"));
-
-    // otherwise, check for DMP data ready interrupt (this should happen frequently)
-    } else if (mpuIntStatus & 0x02) {
-        // wait for correct available data length, should be a VERY short wait
-        while (fifoCount < packetSize) fifoCount = mpu.getFIFOCount();
-
-        // read a packet from FIFO
-        mpu.getFIFOBytes(fifoBuffer, packetSize);
-        mpu.resetFIFO();
-        // track FIFO count here in case there is > 1 packet available
-        // (this lets us immediately read more without waiting for an interrupt)
-        fifoCount -= packetSize;
-
-        #ifdef OUTPUT_READABLE_EULER
-            // display Euler angles in degrees
-            mpu.dmpGetQuaternion(&q, fifoBuffer);
-            mpu.dmpGetEuler(euler, &q);
-            //Serial.print("euler\t");
-            //Serial.print(euler[0] * 180/M_PI); //rotation about x
-            //Serial.print("\t");
-        #endif
-
-        #ifdef OUTPUT_READABLE_REALACCEL
-            // display real acceleration, adjusted to remove gravity
-            mpu.dmpGetQuaternion(&q, fifoBuffer);
-            mpu.dmpGetAccel(&aa, fifoBuffer);
-            mpu.dmpGetGravity(&gravity, &q);
-            mpu.dmpGetLinearAccel(&aaReal, &aa, &gravity);
-            //Serial.print(aaReal.x);
-
-        #endif
-
-        //Serial.print("\n");
-    }
+    //Serial.println("----");
+    //Serial.print(angleavg);
+    //Serial.print('\t');
+    //Serial.print(accelyavg);
+    //Serial.print('\t');
+    //Serial.println(accelzavg);
+  
 
 
   //                  LoRa
@@ -205,19 +236,19 @@ void loop()
   char accelpackz[10];
   char anglepack[10];
   char space[2] = "\t";
-  char finalpack[20] = "                         ";
+  char finalpack[20] = "                   ";
   
-  itoa(aaReal.y, accelpacky+0, 10);
-  itoa(aaReal.z, accelpackz+0, 10);
-  itoa(euler[0] * 180/M_PI, anglepack+0, 10);
+  itoa(accelyavg, accelpacky+0, 10);
+  itoa(accelzavg, accelpackz+0, 10);
+  itoa(angleavg, anglepack+0, 10);
   sprintf(finalpack,"%s%s%s%s%s",anglepack,space,accelpacky,space,accelpackz);
   //Serial.print("Sending "); 
-  Serial.println(finalpack);
+  //Serial.println(finalpack);
   finalpack[19] = 0;
   
   //Serial.println("Sending..."); //delay(10);
   rf95.send((uint8_t *)finalpack, 20);
-
+  Serial.println(finalpack);
   //Serial.println("Waiting for packet to complete..."); //delay(10);
   rf95.waitPacketSent();
   // Now wait for a reply
@@ -225,6 +256,7 @@ void loop()
   uint8_t len = sizeof(buf);
 
   //Serial.println("Waiting for reply..."); //delay(10);
+  /*
   if (rf95.waitAvailableTimeout(1000))
   { 
     // Should be a reply message for us now   
@@ -243,6 +275,6 @@ void loop()
   else
   {
     Serial.println("No reply, is there a listener around?");
-  }
+  }*/
   //delay(1000);
 }

@@ -106,7 +106,7 @@ void setup()
   digitalWrite(RFM95_RST, HIGH);
 
   while (!Serial);
-  Serial.begin(9600);
+  Serial.begin(115200);
   delay(100);
 
   //Serial.println("Arduino LoRa TX Test!");
@@ -201,20 +201,23 @@ void loop()
 
   //                  LoRa
   
-  char accelpack[10];
+  char accelpacky[10];
+  char accelpackz[10];
   char anglepack[10];
   char space[2] = "\t";
-  char finalpack[20] = "                    ";
-  itoa(aaReal.x, accelpack+0, 10);
+  char finalpack[20] = "                   ";
+  
+  itoa(aaReal.y, accelpacky+0, 10);
+  itoa(aaReal.z, accelpackz+0, 10);
   itoa(euler[0] * 180/M_PI, anglepack+0, 10);
-  sprintf(finalpack,"%s%s%s",anglepack,space,accelpack);
+  sprintf(finalpack,"%s%s%s%s%s",anglepack,space,accelpacky,space,accelpackz);
   //Serial.print("Sending "); 
-  Serial.println(finalpack);
+  //Serial.println(finalpack);
   finalpack[19] = 0;
   
   //Serial.println("Sending..."); //delay(10);
   rf95.send((uint8_t *)finalpack, 20);
-
+  Serial.println(finalpack);
   //Serial.println("Waiting for packet to complete..."); //delay(10);
   rf95.waitPacketSent();
   // Now wait for a reply
@@ -222,6 +225,7 @@ void loop()
   uint8_t len = sizeof(buf);
 
   //Serial.println("Waiting for reply..."); //delay(10);
+  /*
   if (rf95.waitAvailableTimeout(1000))
   { 
     // Should be a reply message for us now   
@@ -240,6 +244,6 @@ void loop()
   else
   {
     Serial.println("No reply, is there a listener around?");
-  }
+  }*/
   //delay(1000);
 }

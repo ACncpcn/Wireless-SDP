@@ -40,7 +40,7 @@ void dmpDataReady() {
 #include <RH_RF95.h>
 #include <SPI.h>
 
-#define CLIENT_ADDRESS 1
+#define CLIENT_ADDRESS 0
 #define SERVER_ADDRESS 2
 
 #define RFM95_CS 4

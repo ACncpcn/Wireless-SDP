@@ -40,7 +40,7 @@ void dmpDataReady() {
 #include <RH_RF95.h>
 #include <SPI.h>
 
-#define CLIENT_ADDRESS 0
+#define CLIENT_ADDRESS 1
 #define SERVER_ADDRESS 2
 
 #define RFM95_CS 4
@@ -72,10 +72,10 @@ void setup()
   devStatus = mpu.dmpInitialize();
 
   // supply your own gyro offsets here, scaled for min sensitivity
-  mpu.setXGyroOffset(220);
-  mpu.setYGyroOffset(76);
-  mpu.setZGyroOffset(-85);
-  mpu.setZAccelOffset(1788); // 1688 factory default for my test chip
+  mpu.setXGyroOffset(16);
+  mpu.setYGyroOffset(60);
+  mpu.setZGyroOffset(-100);
+  mpu.setZAccelOffset(2057); // 1688 factory default for my test chip
 
   // make sure it worked (returns 0 if so)
   if (devStatus == 0) {
@@ -135,7 +135,7 @@ void loop()
   int accelyavg = 0;
   int accelzavg = 0;
 
-  for ( unsigned char i = 0; i < nloop; ++i){
+  for ( unsigned char i = 0; i <= nloop; i++){
     // wait for MPU interrupt or extra packet(s) available
     while (!mpuInterrupt && fifoCount < packetSize) {
     }
@@ -197,12 +197,16 @@ void loop()
   
         //Serial.print("\n");
 
-        angleavg += (euler[0] * 180/M_PI)/nloop;
-        accelyavg += aaReal.y/nloop;          
-        accelzavg += aaReal.z/nloop;
+        angleavg += (euler[0] * 180/M_PI);
+        accelyavg += aaReal.y;          
+        accelzavg += aaReal.z;
     }
 
   }
+
+  angleavg /= nloop;
+  accelyavg /= nloop;
+  accelzavg /= nloop;
 
   //-------------------------------------------------------
   //                  LoRa

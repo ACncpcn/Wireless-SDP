@@ -10,7 +10,7 @@
 #endif
 #include "MPU6050_6Axis_MotionApps20.h"
 MPU6050 mpu;
-#define OUTPUT_READABLE_EULER
+#define OUTPUT_READABLE_YAWPITCHROLL
 #define OUTPUT_READABLE_REALACCEL
 #define INTERRUPT_PIN 2  // use pin 2 on Arduino Uno & most boards
 
@@ -27,7 +27,7 @@ Quaternion q;           // [w, x, y, z]         quaternion container
 VectorInt16 aa;         // [x, y, z]            accel sensor measurements
 VectorInt16 aaReal;     // [x, y, z]            gravity-free accel sensor measurements
 VectorFloat gravity;    // [x, y, z]            gravity vector
-float euler[3];         // [psi, theta, phi]    Euler angle container
+float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gravity vector
 
 volatile bool mpuInterrupt = false;     // indicates whether MPU interrupt pin has gone high
 void dmpDataReady() {
@@ -166,19 +166,19 @@ void loop()
         // (this lets us immediately read more without waiting for an interrupt)
         fifoCount -= packetSize;
 
-        #ifdef OUTPUT_READABLE_EULER
+        #ifdef OUTPUT_READABLE_YAWPITCHROLL
             // display Euler angles in degrees
             mpu.dmpGetQuaternion(&q, fifoBuffer);
-            mpu.dmpGetEuler(euler, &q);
-            //Serial.print("euler\t");
-            //Serial.print(euler[0] * 180/M_PI); //rotation about x
+            mpu.dmpGetGravity(&gravity, &q);
+            mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
+            //Serial.print("ypr\t");
+            //Serial.print(ypr[0] * 180/M_PI);
             //Serial.print("\t");
-            //Serial.print(euler[1] * 180/M_PI);
+            //Serial.print(ypr[1] * 180/M_PI);
             //Serial.print("\t");
-            //Serial.print(euler[2] * 180/M_PI);
-            //Serial.print("\t");
+            //Serial.println(ypr[2] * 180/M_PI);
         #endif
-
+        
         #ifdef OUTPUT_READABLE_REALACCEL
             // display real acceleration, adjusted to remove gravity
             mpu.dmpGetQuaternion(&q, fifoBuffer);
@@ -197,22 +197,23 @@ void loop()
   
         //Serial.print("\n");
 
-        angleavg += (euler[0] * 180/M_PI);
+        angleavg += (ypr[0] * 180/M_PI);
         accelyavg += aaReal.y;          
         accelzavg += aaReal.z;
     }
 
   }
 
-  angleavg /= nloop;
-  accelyavg /= nloop;
-  accelzavg /= nloop;
+  angleavg /= nloop;  // angle orientation
+  accelzavg /= nloop; // up down
+  accelyavg /= nloop; // forward backward
+
 
   //-------------------------------------------------------
   //                  LoRa
   
-  char accelpacky[10];
   char accelpackz[10];
+  char accelpacky[10];
   char anglepack[10];
   char space[2] = "\t";
   char finalpack[20] = "                   ";
@@ -220,7 +221,7 @@ void loop()
   itoa(accelyavg, accelpacky+0, 10);
   itoa(accelzavg, accelpackz+0, 10);
   itoa(angleavg, anglepack+0, 10);
-  sprintf(finalpack,"%s%s%s%s%s",anglepack,space,accelpacky,space,accelpackz);
+  sprintf(finalpack,"%s%s%s%s%s",anglepack,space,accelpackz,space,accelpacky);
   //Serial.print("Sending "); 
   //Serial.println(finalpack);
   finalpack[19] = 0;

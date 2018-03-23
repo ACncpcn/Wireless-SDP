@@ -1,4 +1,7 @@
 		accelx	accely	accelz	girox	giroy	giroz
 red good	-1717	1268	117	79	34	55	
 red bad 	-1893	2643	1773	82	34	8
-green		-3010	3533	2057	16	60	-100
+green		-3010	3533	2057	16	60	-100
+
+
+

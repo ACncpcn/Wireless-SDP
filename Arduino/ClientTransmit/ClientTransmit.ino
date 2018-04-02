@@ -116,7 +116,7 @@ void setup()
   // The default transmitter power is 13dBm, using PA_BOOST.
   // If you are using RFM95/96/97/98 modules which uses the PA_BOOST transmitter pin, then 
   // you can set transmitter powers from 5 to 23 dBm:
-//  driver.setTxPower(23, false);
+  driver.setTxPower(23, false);
 }
 
 //uint8_t data[] = "Hello World!";

@@ -22,7 +22,7 @@ class CoreMap(QThread):
     
     def __init__(self, parent = None):
         #super(getSerial, self).__init__(parent)
-        QThread.__init__(self)        
+        QThread.__init__(self) 
         
     def run(self):
         
@@ -51,7 +51,7 @@ class CoreMap(QThread):
         
         # Store Location
         verts0 = [(0,0)]
-        #verts1 = [(0,0)]
+        verts1 = [(0,0)]
         
         # total steps
         totes = [(0)for i in range(ntr)]
@@ -274,14 +274,15 @@ class CoreMap(QThread):
             '''
             verts0.append((x[0],y[0]))
             xs, ys = zip(*verts0)
-            #print(xs)
+            verts1.append((x[1],y[1]))
+            xs1, ys1 = zip(*verts1)
             
             # emit signal when it is time to update map with coordinates
             # xs is for path history and x[0] is for current position marker
-            self.add_data.emit([xs,ys, x[0], y[0]])
+            self.add_data.emit([xs, ys, xs1, ys1, x[0], y[0], x[1], y[1]])
             
         #print()
-        ser.close()
+        #ser.close()
 
 class ExampleApp(QtWidgets.QMainWindow, Layout.Ui_MainWindow):
     def __init__(self):
@@ -298,6 +299,7 @@ class ExampleApp(QtWidgets.QMainWindow, Layout.Ui_MainWindow):
         '''
         
         if self.StartToggle.isChecked() == 1:
+
             # initialize map thread
             self.map_thread = CoreMap()
             
@@ -306,7 +308,7 @@ class ExampleApp(QtWidgets.QMainWindow, Layout.Ui_MainWindow):
             
             self.map_thread.start()
         else:
-            self.map_thread.disconnect()
+            self.map_thread.disconnect() # disconnect signal
         
             
         
@@ -328,21 +330,17 @@ class ExampleApp(QtWidgets.QMainWindow, Layout.Ui_MainWindow):
         ax.set_ylim(yrange)
         
         # data is vector
-        x , y , xp, yp= data
+        x , y , x1, y1, xp, yp, xp1, yp1= data
         
         # plot data
         ax.set_title('Map')
         ax.plot(x, y, '--', lw=2, color='red', ms=10)
         ax.plot(xp, yp, 'ro')
-
+        ax.plot(x1, y1, '--', lw=2, color='blue', ms=10)
+        ax.plot(xp1, yp1, 'ro', color = 'blue')
         
         # refresh canvas
         self.canvas.draw()
-              
-
-    def clear_list(self):
-        #self.listWidget.clear() # Clearlist
-        return
 
 
 def main():

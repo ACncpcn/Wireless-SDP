@@ -18,15 +18,17 @@ import Layout # Layout of GUI
 
 class CoreMap(QThread):
     
-    add_data = pyqtSignal(object)
+    add_data = pyqtSignal(object) # signal that emits data to be plotted on map
+    err_line = pyqtSignal(int)    # signal that emits transmitter number that disconnected
+    calib_line = pyqtSignal(int)  #signal that emits calibration progress
     
-    def __init__(self, parent = None):
+    def __init__(self, ser, parent = None):
         #super(getSerial, self).__init__(parent)
         QThread.__init__(self) 
+        self.ser = ser
         
     def run(self):
         
-        ser = serial.Serial('COM3', 9600)
 
         #start_time = time()
         timepoints = []
@@ -42,7 +44,7 @@ class CoreMap(QThread):
         y = [(0)for i in range(ntr)]
         
         #view_time = 1 # seconds of data to view at once
-        duration = 30  # total seconds to collect data
+        #duration = 30  # total seconds to collect data
         ind = [(0)for i in range(ntr)]
         
         # Values to trigger a step and forward movement
@@ -87,25 +89,37 @@ class CoreMap(QThread):
         
         while (time() < start_time + calib_tim):
             #just read data to get calibration moving
-            ser.reset_input_buffer()
-            data = ser.readline()
+            self.ser.reset_input_buffer()
+            data = self.ser.readline()
             data = data.decode().split() # parse data 
         
             client = int(data[3])
             itst[client] = itst[client] + 1
         
             # % done
-            percent = (int(time() - start_time)) / (calib_tim)
-            print("Progress {:2.0%}".format(percent), end="\r")
+            percent = (time() - start_time) / (calib_tim)
+            #print("Progress {:2.0%}".format(percent), end="\r")
+            self.calib_line.emit(np.around(percent*100))
             # Store last values to caLculate offsets
-            '''
+            
             # Check if transmitters are connected
             if (np.amax(itst) > np.amin(itst) + 10):
-                print('Transmitter %d has stopped working' % np.argmin(itst))
-                input('Press Enter when you have reconnected transmitter')  
+                #print('Transmitter %d has stopped working' % np.argmin(itst))
+                #input('Press Enter when you have reconnected transmitter')
+                
+                # emit signal to pop up warning message argmin(itst) gives the
+                # transmitter number that has been disconnected
+                self.err_line.emit(np.argmin(itst)) 
+                
+                self.Pause = True
+                while self.Pause == True:
+                    # Wait here until warning message has been closes
+                    pass
+                
+                # reset calibration values
                 start_time = time() # reset timer to calibrate again
                 itst = np.array([0,0])          
-            '''
+            
             if (time() > start_time + calib_tim - 2):
                 #print('do not move')
                 client = int(data[3])
@@ -114,7 +128,7 @@ class CoreMap(QThread):
                 accelforcor[client] = accelforcor[client] + float(data[2])
                 i[client] = i[client] + 1
                 
-        print()
+        #print()
         
         # Average calibration data to find offsets for each transmitter
         anglecor = anglecor/i        
@@ -142,15 +156,22 @@ class CoreMap(QThread):
             iloop = [0,0]
             
             # % done
-            percent = (int(time() - start_time)) / (duration)
-            print("Progress {:2.0%}".format(percent), end="\r")
+            #percent = (int(time() - start_time)) / (duration)
+            #print("Progress {:2.0%}".format(percent), end="\r")
             
             # Loop to get a chunk of data to later process
             while run2:
                 
-                ser.reset_input_buffer()
-                data = ser.readline()
-                data = data.decode().split()
+                try:
+                    # get data
+                    self.ser.reset_input_buffer()
+                    data = self.ser.readline()
+                    data = data.decode().split()
+                except:
+                    # An error will occur when serial comm is closed outside run
+                    # this happens when we finish mapping so this is an external
+                    # signal to stop gathering data
+                    run2 = False
                 
                 try:                      
                     # store the entire dataset for later
@@ -170,15 +191,22 @@ class CoreMap(QThread):
         
                     # when time's up, kill the collect loop
                     # kill run2 when we gather at least 3 samples from both transmitters
-                    if timepoints[-1] > duration: run=False
+                    #if timepoints[-1] > duration: run=False
                     if (iloop[0] >= 5) & (iloop[1] >= 5): run2 = False
                         
                     # check if a transmitter has stopped. If samples are 3 behind
                     # zero pad the difference of samples
                     elif (np.amax(iloop) > np.amin(iloop)+10):
-                        troff = np.argmin(iloop)
-                        print('Transmitter %d has stopped working' % troff)
-                        input('Press Enter when you have reconnected transmitter')
+                        troff = np.argmin(iloop) # transmitter that turned off
+                        #print('Transmitter %d has stopped working' % troff)
+                        #input('Press Enter when you have reconnected transmitter')
+                        
+                        # Don't move on until pop up message is dismissed
+                        self.err_line.emit(troff) 
+                        self.Pause = True
+                        while self.Pause == True:
+                            pass
+                        
                         npad = np.amax(iloop) - np.amin(iloop)
                         for i in range(npad):
                             # zero pad the missed data, append timepoints
@@ -187,7 +215,8 @@ class CoreMap(QThread):
                             accelfor[troff].append(0)
                             iloop[troff] = iloop[troff] + 1
                             if client == 0: 
-                                timepoints.append(time()-start_time)
+                                # append time points if necessary
+                                timepoints.append(time()-start_time) 
                                        
         
                 # if the try statement throws an error, just do nothing
@@ -299,19 +328,31 @@ class ExampleApp(QtWidgets.QMainWindow, Layout.Ui_MainWindow):
         '''
         
         if self.StartToggle.isChecked() == 1:
+            
+            self.ser = serial.Serial('COM3', 9600)
+
+            
+            self.openWindow()
+            self.pbar.setMinimum(0)
+            self.pbar.setMaximum(100)
+            self.pbar.setValue(0)
 
             # initialize map thread
-            self.map_thread = CoreMap()
+            self.map_thread = CoreMap(self.ser)
             
             # add signal. When signal fires go to plot data
             self.map_thread.add_data.connect(self.Plot)
             
-            self.map_thread.start()
-        else:
-            self.map_thread.disconnect() # disconnect signal
-        
+            # when error signal fires pop up error message
+            self.map_thread.err_line.connect(self.errormsg)
             
-        
+            self.map_thread.calib_line.connect(self.progbar)
+            
+            self.map_thread.start() #begin running CoreMap
+        else:
+            self.map_thread.disconnect() # disconnect thread
+            self.ser.close()
+                
     
     def Plot(self, data):
         ''' plot to matplotlib figure '''
@@ -341,6 +382,29 @@ class ExampleApp(QtWidgets.QMainWindow, Layout.Ui_MainWindow):
         
         # refresh canvas
         self.canvas.draw()
+        
+    def errormsg(self, errtr):
+        '''errtr is passed from CoreMap when a transmitter is disconnected. errtr
+        gives which transmitter is disconnected. A warning window pop ups
+        '''
+                                
+        # Warning Message
+        msg = QtWidgets.QMessageBox() 
+        msg.setIcon(QtWidgets.QMessageBox.Warning)
+        text = "Transmitter " + str (errtr) + " has stopped working\nRecconect it"
+        msg.setText(text)
+        msg.setWindowTitle("Transmitter Error")
+        msg.exec_()
+        
+        # Resume CoreMap when messagebox is dismissed
+        self.map_thread.Pause = False
+        
+    def progbar(self, value):
+        self.pbar.setValue(value)
+        
+        if value == 100:
+            self.window.hide()
+
 
 
 def main():

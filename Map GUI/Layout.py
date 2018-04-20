@@ -11,7 +11,17 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 import matplotlib.pyplot as plt
 
+from pbarwidget import Ui_pbarwin
+
 class Ui_MainWindow(object):
+    
+    def openWindow(self):
+        self.window = QtWidgets.QMainWindow()
+        self.ui = Ui_pbarwin()
+        self.ui.setupUi(self.window)
+        self.pbar = self.ui.progressBar
+        self.window.show()
+        
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(800, 600)
@@ -41,6 +51,6 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "WiFind"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "Wi-Find"))
         self.StartToggle.setText(_translate("MainWindow", "Start/Stop"))
 

@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """
 Created on Wed Apr 11 21:28:14 2018
-
 @author: Alex
 """
 
-from PyQt5 import QtWidgets  # Import the PyQt5 module we'll need
+from PyQt5 import QtWidgets, QtGui  # Import the PyQt5 module we'll need
 import sys  # We need sys so that we can pass argv to QApplication
 from PyQt5.QtCore import QThread, pyqtSignal # Used to work with threads
+from PyQt5.QtWidgets import QInputDialog
 
 import serial 
 import numpy as np
@@ -72,7 +72,21 @@ class CoreMap(QThread):
         plt.xlim(mrange)
         '''
         
-        stepsize = 0.5
+        # get step length
+        
+        self.feet
+        self.inch
+        
+        totinch = self.feet*12 + self.inch
+        stridelen = totinch * .41
+        stepsize = stridelen * 0.0254
+    
+        
+        #stepsize = 0.5
+        
+        
+        
+        
         
         # correction offset
         accelcor = np.array([0,0])  
@@ -320,7 +334,63 @@ class ExampleApp(QtWidgets.QMainWindow, Layout.Ui_MainWindow):
         # It sets up layout and widgets that are defined
         self.StartToggle.toggled.connect(self.Wait)  # change stream status if toggled
         #self.Clear.clicked.connect(self.clear_list)        # clear window 
-    
+        
+        # Personalization
+        self.setWindowTitle("Wi-Find")
+        self.setWindowIcon(QtGui.QIcon('WiFindLogo.png'))
+        
+        # Quitter
+        QuitAction = QtWidgets.QAction("&Quit", self)
+        QuitAction.setShortcut("Ctrl+Q")
+        QuitAction.setStatusTip('Close Application')
+        QuitAction.triggered.connect(self.close)
+        
+        Com1Action = QtWidgets.QAction("&COM1", self)
+        Com1Action.setStatusTip('COM1')
+        Com1Action.setCheckable(True)
+        Com2Action = QtWidgets.QAction("&COM2", self)
+        Com2Action.setStatusTip('COM2')
+        Com2Action.setCheckable(True)
+        Com3Action = QtWidgets.QAction("&COM3", self)
+        Com3Action.setStatusTip('COM3')
+        Com3Action.setCheckable(True)
+        Com4Action = QtWidgets.QAction("&COM4", self)
+        Com4Action.setStatusTip('COM4')
+        Com4Action.setCheckable(True)
+        Com5Action = QtWidgets.QAction("&COM5", self)
+        Com5Action.setStatusTip('COM5')
+        Com5Action.setCheckable(True)
+        
+        Com3Action.setChecked(True)
+        #print(Com1Action.isChecked())
+        if Com1Action.isChecked() == 1:
+            self.Com = "COM1"
+            Com4Action.setChecked(False)
+            #Com3Action.setChecked(True)
+            print(Com1Action.isChecked())
+        elif Com2Action.isChecked() == 1:
+            self.Com = "COM2"
+        elif Com3Action.isChecked() == 1:
+            self.Com = "COM3"
+        elif Com4Action.isChecked() == 1:
+            self.Com = "COM4"
+            print("yo")
+        elif Com5Action.isChecked() == 1:
+            self.Com = "COM5"
+        
+        # Displaying Menu and Status Bar
+        self.statusBar()
+        
+        mainMenu = self.menuBar()
+        fileMenu = mainMenu.addMenu('&Serial Port')
+        fileMenu.addAction(Com1Action)
+        fileMenu.addAction(Com2Action)
+        fileMenu.addAction(Com3Action)
+        fileMenu.addAction(Com4Action)
+        fileMenu.addAction(Com5Action)
+        fileMenu = mainMenu.addMenu('&Options')
+        fileMenu.addAction(QuitAction)
+        
     def Wait(self):
         ''' 
         Connect signal to plot function and
@@ -329,26 +399,41 @@ class ExampleApp(QtWidgets.QMainWindow, Layout.Ui_MainWindow):
         
         if self.StartToggle.isChecked() == 1:
             
-            self.ser = serial.Serial('COM3', 9600)
-
             
-            self.openWindow()
-            self.pbar.setMinimum(0)
-            self.pbar.setMaximum(100)
-            self.pbar.setValue(0)
-
-            # initialize map thread
-            self.map_thread = CoreMap(self.ser)
+            text1, feetinput = QInputDialog.getInt(self, 'Settings', 'Enter feet: ')
             
-            # add signal. When signal fires go to plot data
-            self.map_thread.add_data.connect(self.Plot)
-            
-            # when error signal fires pop up error message
-            self.map_thread.err_line.connect(self.errormsg)
-            
-            self.map_thread.calib_line.connect(self.progbar)
-            
-            self.map_thread.start() #begin running CoreMap
+            if feetinput == True:
+                text2, inchinput = QInputDialog.getInt(self, 'Settings', 'Enter inches: ')
+                if inchinput == True:
+                    
+                    self.ser = serial.Serial(self.Com, 9600)
+    
+                
+                    self.openWindow()
+                    self.pbar.setMinimum(0)
+                    self.pbar.setMaximum(100)
+                    self.pbar.setValue(0)
+        
+                    # initialize map thread
+                    self.map_thread = CoreMap(self.ser)
+                    
+                    # send feet and inch input values to map thread
+                    self.map_thread.feet = feetinput 
+                    self.map_thread.inch = inchinput
+                    
+                    # add signal. When signal fires go to plot data
+                    self.map_thread.add_data.connect(self.Plot)
+                    
+                    # when error signal fires pop up error message
+                    self.map_thread.err_line.connect(self.errormsg)
+                    
+                    self.map_thread.calib_line.connect(self.progbar)
+                    
+                    self.map_thread.start() #begin running CoreMap
+                else:
+                    self.close()
+            else:
+                self.close()
         else:
             self.map_thread.disconnect() # disconnect thread
             self.ser.close()
@@ -387,7 +472,7 @@ class ExampleApp(QtWidgets.QMainWindow, Layout.Ui_MainWindow):
         '''errtr is passed from CoreMap when a transmitter is disconnected. errtr
         gives which transmitter is disconnected. A warning window pop ups
         '''
-                                
+        
         # Warning Message
         msg = QtWidgets.QMessageBox() 
         msg.setIcon(QtWidgets.QMessageBox.Warning)

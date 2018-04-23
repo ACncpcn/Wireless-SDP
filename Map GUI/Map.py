@@ -335,6 +335,7 @@ class ExampleApp(QtWidgets.QMainWindow, Layout.Ui_MainWindow):
 
         
         self.Com3Action.setChecked(True)
+        self.Com = ("COM3")
         #print(Com1Action.isChecked())
 
         self.ComAction.triggered.connect(self.serchoose)
@@ -376,8 +377,7 @@ class ExampleApp(QtWidgets.QMainWindow, Layout.Ui_MainWindow):
                 if inchinput == True:
                     
                     # start serial communication with com port chosen prior
-                    self.ser = serial.Serial(self.Com, 9600)
-    
+                    self.ser = serial.Serial(self.Com, 9600)    
                 
                     self.openWindow()
                     self.pbar.setMinimum(0)

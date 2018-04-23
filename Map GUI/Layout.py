@@ -48,6 +48,48 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
+        
+                # Personalization
+        self.setWindowTitle("Wi-Find")
+        self.setWindowIcon(QtGui.QIcon('WiFindLogo.png'))
+        
+        # Quitter
+        self.QuitAction = QtWidgets.QAction("&Quit", self)
+        self.QuitAction.setShortcut("Ctrl+Q")
+        self.QuitAction.setStatusTip('Close Application')
+        self.QuitAction.triggered.connect(self.close)
+        
+        self.ComAction = QtWidgets.QActionGroup(self)
+        self.Com1Action = self.ComAction.addAction(QtWidgets.QAction('COM1',self))
+        self.Com2Action = self.ComAction.addAction(QtWidgets.QAction('COM2',self))
+        self.Com3Action = self.ComAction.addAction(QtWidgets.QAction('COM3',self))
+        self.Com4Action = self.ComAction.addAction(QtWidgets.QAction('COM4',self))
+        self.Com5Action = self.ComAction.addAction(QtWidgets.QAction('COM5',self))
+        
+        self.Com1Action.setStatusTip('COM1')
+        self.Com1Action.setCheckable(True)
+        self.Com2Action.setStatusTip('COM2')
+        self.Com2Action.setCheckable(True)
+        self.Com3Action.setStatusTip('COM3')
+        self.Com3Action.setCheckable(True)
+        self.Com4Action.setStatusTip('COM4')
+        self.Com4Action.setCheckable(True)
+        self.Com5Action.setStatusTip('COM5')
+        self.Com5Action.setCheckable(True)
+        
+        # Displaying Menu and Status Bar
+        self.statusBar()
+        
+        mainMenu = self.menuBar()
+        
+        fileMenu = mainMenu.addMenu('&Serial Port')
+        fileMenu.addAction(self.Com1Action)
+        fileMenu.addAction(self.Com2Action)
+        fileMenu.addAction(self.Com3Action)
+        fileMenu.addAction(self.Com4Action)
+        fileMenu.addAction(self.Com5Action)
+        fileMenu = mainMenu.addMenu('&Options')
+        fileMenu.addAction(self.QuitAction)
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate

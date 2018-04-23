@@ -85,9 +85,6 @@ class CoreMap(QThread):
         #stepsize = 0.5
         
         
-        
-        
-        
         # correction offset
         accelcor = np.array([0,0])  
         accelforcor = np.array([0,0])
@@ -99,9 +96,9 @@ class CoreMap(QThread):
         start_time = time()
         calib_tim = 10 #20
         
-        print('calibrating')
+        #print('calibrating')
         
-        while (time() < start_time + calib_tim):
+        while (time() <= start_time + calib_tim):
             #just read data to get calibration moving
             self.ser.reset_input_buffer()
             data = self.ser.readline()
@@ -149,12 +146,12 @@ class CoreMap(QThread):
         accelcor = accelcor/i
         accelforcor = accelforcor/i
         
-        print(i)
-        print(anglecor)
-        print(accelcor)
-        print(accelforcor)
+        #print(i)
+        #print(anglecor)
+        #print(accelcor)
+        #print(accelforcor)
         
-        print('calibrating done')
+        #print('calibrating done')
         start_time = time()
         
         run =  True
@@ -335,77 +332,50 @@ class ExampleApp(QtWidgets.QMainWindow, Layout.Ui_MainWindow):
         self.StartToggle.toggled.connect(self.Wait)  # change stream status if toggled
         #self.Clear.clicked.connect(self.clear_list)        # clear window 
         
-        # Personalization
-        self.setWindowTitle("Wi-Find")
-        self.setWindowIcon(QtGui.QIcon('WiFindLogo.png'))
+
         
-        # Quitter
-        QuitAction = QtWidgets.QAction("&Quit", self)
-        QuitAction.setShortcut("Ctrl+Q")
-        QuitAction.setStatusTip('Close Application')
-        QuitAction.triggered.connect(self.close)
-        
-        Com1Action = QtWidgets.QAction("&COM1", self)
-        Com1Action.setStatusTip('COM1')
-        Com1Action.setCheckable(True)
-        Com2Action = QtWidgets.QAction("&COM2", self)
-        Com2Action.setStatusTip('COM2')
-        Com2Action.setCheckable(True)
-        Com3Action = QtWidgets.QAction("&COM3", self)
-        Com3Action.setStatusTip('COM3')
-        Com3Action.setCheckable(True)
-        Com4Action = QtWidgets.QAction("&COM4", self)
-        Com4Action.setStatusTip('COM4')
-        Com4Action.setCheckable(True)
-        Com5Action = QtWidgets.QAction("&COM5", self)
-        Com5Action.setStatusTip('COM5')
-        Com5Action.setCheckable(True)
-        
-        Com3Action.setChecked(True)
+        self.Com3Action.setChecked(True)
         #print(Com1Action.isChecked())
-        if Com1Action.isChecked() == 1:
+
+        self.ComAction.triggered.connect(self.serchoose)
+        '''
+        self.Com2Action.toggled.connect(self.serchoose2)
+        self.Com3Action.toggled.connect(self.serchoose3)
+        self.Com4Action.toggled.connect(self.serchoose4)
+        self.Com5Action.toggled.connect(self.serchoose5)'''
+
+
+        
+    def serchoose(self):
+        if (self.Com1Action.isChecked() == 1):
             self.Com = "COM1"
-            Com4Action.setChecked(False)
-            #Com3Action.setChecked(True)
-            print(Com1Action.isChecked())
-        elif Com2Action.isChecked() == 1:
-            self.Com = "COM2"
-        elif Com3Action.isChecked() == 1:
+        elif (self.Com2Action.isChecked() == 1):
+            self.Com = "COM2" 
+        elif (self.Com3Action.isChecked() == 1):
             self.Com = "COM3"
-        elif Com4Action.isChecked() == 1:
+        elif (self.Com4Action.isChecked() == 1):
             self.Com = "COM4"
-            print("yo")
-        elif Com5Action.isChecked() == 1:
-            self.Com = "COM5"
-        
-        # Displaying Menu and Status Bar
-        self.statusBar()
-        
-        mainMenu = self.menuBar()
-        fileMenu = mainMenu.addMenu('&Serial Port')
-        fileMenu.addAction(Com1Action)
-        fileMenu.addAction(Com2Action)
-        fileMenu.addAction(Com3Action)
-        fileMenu.addAction(Com4Action)
-        fileMenu.addAction(Com5Action)
-        fileMenu = mainMenu.addMenu('&Options')
-        fileMenu.addAction(QuitAction)
-        
+        elif (self.Com5Action.isChecked() == 1):
+            self.Com = "COM5"            
+            
+            
     def Wait(self):
         ''' 
         Connect signal to plot function and
         wait until signal fires
         '''
         
+        # run if user selects to start mapping
         if self.StartToggle.isChecked() == 1:
             
-            
+            # input dialog to get user height
             text1, feetinput = QInputDialog.getInt(self, 'Settings', 'Enter feet: ')
             
             if feetinput == True:
                 text2, inchinput = QInputDialog.getInt(self, 'Settings', 'Enter inches: ')
                 if inchinput == True:
                     
+                    # start serial communication with com port chosen prior
                     self.ser = serial.Serial(self.Com, 9600)
     
                 
@@ -487,9 +457,8 @@ class ExampleApp(QtWidgets.QMainWindow, Layout.Ui_MainWindow):
     def progbar(self, value):
         self.pbar.setValue(value)
         
-        if value == 100:
+        if int(value) == 100:
             self.window.hide()
-
 
 
 def main():

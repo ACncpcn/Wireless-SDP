@@ -284,6 +284,8 @@ class ExampleApp(QtWidgets.QMainWindow, Layout.Ui_MainWindow):
         # default COM port is COM3
         self.Com3Action.setChecked(True)
         self.Com = ("COM3")
+        
+        # if user changes com port menu option go to serchoose
         self.ComAction.triggered.connect(self.serchoose)
 
         
@@ -317,7 +319,7 @@ class ExampleApp(QtWidgets.QMainWindow, Layout.Ui_MainWindow):
             
                 # input dialog to get user height
                 text1, feetinput = QInputDialog.getInt(self, 'Settings', 'Enter feet: ')
-
+                
                 if feetinput == True:
                     text2, inchinput = QInputDialog.getInt(self, 'Settings', 'Enter inches: ')
                     if inchinput == True:

@@ -284,6 +284,13 @@ class ExampleApp(QtWidgets.QMainWindow, Layout.Ui_MainWindow):
         # default COM port is COM3
         self.Com3Action.setChecked(True)
         self.Com = ("COM3")
+<<<<<<< HEAD
+        
+        # if user changes com port menu option go to serchoose
+=======
+        #print(Com1Action.isChecked())
+
+>>>>>>> 65ec0588d963dd1aba2ab6bc8a0b97368528b2af
         self.ComAction.triggered.connect(self.serchoose)
 
         
@@ -310,6 +317,7 @@ class ExampleApp(QtWidgets.QMainWindow, Layout.Ui_MainWindow):
         
         # run if user selects to start mapping
         if self.StartToggle.isChecked() == 1:
+<<<<<<< HEAD
     
             try:
                 # start serial communication with com port chosen prior
@@ -317,7 +325,19 @@ class ExampleApp(QtWidgets.QMainWindow, Layout.Ui_MainWindow):
             
                 # input dialog to get user height
                 text1, feetinput = QInputDialog.getInt(self, 'Settings', 'Enter feet: ')
-
+=======
+            
+            # input dialog to get user height
+            text1, feetinput = QInputDialog.getInt(self, 'Settings', 'Enter feet: ')
+            
+            if feetinput == True:
+                text2, inchinput = QInputDialog.getInt(self, 'Settings', 'Enter inches: ')
+                if inchinput == True:
+                    
+                    # start serial communication with com port chosen prior
+                    self.ser = serial.Serial(self.Com, 9600)    
+>>>>>>> 65ec0588d963dd1aba2ab6bc8a0b97368528b2af
+                
                 if feetinput == True:
                     text2, inchinput = QInputDialog.getInt(self, 'Settings', 'Enter inches: ')
                     if inchinput == True:

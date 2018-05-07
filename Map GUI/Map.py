@@ -378,8 +378,8 @@ class ExampleApp(QtWidgets.QMainWindow, Layout.Ui_MainWindow):
         ax.grid(True)
         
         # map limits
-        mrange = [-1, 1] # map range
-        yrange = [-1,1]
+        mrange = [-5, 5] # map range
+        yrange = [-5,5]
         ax.set_xlim(mrange)
         ax.set_ylim(yrange)
         

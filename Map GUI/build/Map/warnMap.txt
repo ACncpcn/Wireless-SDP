@@ -111,8 +111,8 @@ missing module named scipy.linalg.qr_insert - imported by scipy.linalg, scipy.sp
 missing module named scipy.spatial.cKDTree - imported by scipy.spatial, scipy.interpolate.ndgriddata
 missing module named six.moves.map - imported by six.moves, matplotlib.patches, matplotlib.afm, matplotlib.mlab, matplotlib.axes._subplots, prompt_toolkit.document
 missing module named subprocess32 - imported by matplotlib.compat.subprocess
-missing module named Tkinter - imported by IPython.lib.clipboard, ipykernel.eventloops, PIL.ImageTk
 missing module named PIL._webp - imported by PIL, PIL.WebPImagePlugin
+missing module named Tkinter - imported by IPython.lib.clipboard, ipykernel.eventloops, PIL.ImageTk
 missing module named 'PySide.QtCore' - imported by PIL.ImageQt
 missing module named 'PyQt4.QtCore' - imported by PIL.ImageQt
 missing module named PIL._imagingagg - imported by PIL, PIL.ImageDraw
@@ -135,7 +135,7 @@ missing module named dateutil.tz.tzfile - imported by dateutil.tz, dateutil.zone
 missing module named six.moves.range - imported by six.moves, dateutil.rrule, prompt_toolkit.utils, prompt_toolkit.document, prompt_toolkit.buffer, prompt_toolkit.layout.containers, prompt_toolkit.layout.controls, prompt_toolkit.layout.lexers, prompt_toolkit.layout.processors, prompt_toolkit.layout.margins, prompt_toolkit.styles.from_dict, prompt_toolkit.renderer, prompt_toolkit.key_binding.bindings.named_commands, prompt_toolkit.key_binding.bindings.scroll, prompt_toolkit.key_binding.bindings.vi, prompt_toolkit.layout.menus, prompt_toolkit.terminal.vt100_output, prompt_toolkit.terminal.win32_input, prompt_toolkit.key_binding.input_processor, prompt_toolkit.terminal.vt100_input
 missing module named "'six.moves.urllib'.request" - imported by matplotlib.finance, matplotlib.image, matplotlib
 missing module named 'IPython.kernel.comm' - imported by matplotlib.backends.backend_nbagg
-missing module named urllib.urlopen - imported by urllib, IPython.utils.openpy, IPython.core.interactiveshell, pygments.lexers._lua_builtins, pygments.lexers._postgres_builtins, _pytest.pastebin
+missing module named urllib.urlopen - imported by urllib, IPython.utils.openpy, IPython.core.interactiveshell, pygments.lexers._postgres_builtins, pygments.lexers._lua_builtins, _pytest.pastebin
 missing module named traitlets.config.Application - imported by traitlets.config, traitlets.log, ipykernel.kernelspec
 missing module named  - imported by nbformat.validator
 missing module named functools32 - imported by matplotlib.font_manager, jsonschema.compat
@@ -170,11 +170,11 @@ missing module named pyreadline - imported by win_unicode_console.readline_hook
 missing module named pygments.lexers.Python3Lexer - imported by pygments.lexers, IPython.lib.lexers
 missing module named pygments.lexers.PythonLexer - imported by pygments.lexers, IPython.lib.lexers, IPython.core.oinspect
 missing module named pygments.lexers.BashLexer - imported by pygments.lexers, IPython.lib.lexers
-missing module named urllib.FancyURLopener - imported by urllib, pygments.lexers._sourcemod_builtins
 missing module named urllib.urlretrieve - imported by urllib, notebook.nbextensions, IPython.core.extensions, pygments.lexers._php_builtins
-missing module named ctags - imported by pygments.formatters.html
+missing module named urllib.FancyURLopener - imported by urllib, pygments.lexers._sourcemod_builtins
 missing module named pygments.formatters.LatexFormatter - imported by pygments.formatters, nbconvert.filters.highlight, nbconvert.preprocessors.latex
 missing module named pygments.formatters.HtmlFormatter - imported by pygments.formatters, nbconvert.filters.highlight, nbconvert.filters.markdown_mistune, nbconvert.preprocessors.csshtmlheader, IPython.core.oinspect
+missing module named ctags - imported by pygments.formatters.html
 missing module named pysqlite2 - imported by IPython.core.history
 missing module named repr - imported by IPython.core.debugger
 missing module named 'IPython.kernel.zmq' - imported by IPython
@@ -268,7 +268,7 @@ missing module named xdis - imported by PyInstaller.lib.modulegraph._compat, C:\
 missing module named _pkgutil - imported by PyInstaller.lib.modulegraph.modulegraph, C:\Users\conce\OneDrive\Documents\Wireless SDP\Wireless-SDP\Map GUI\Map.py
 missing module named 'macholib.compat' - imported by macholib.MachO, C:\Users\conce\OneDrive\Documents\Wireless SDP\Wireless-SDP\Map GUI\Map.py
 missing module named _scproxy - imported by urllib.request, C:\Users\conce\OneDrive\Documents\Wireless SDP\Wireless-SDP\Map GUI\Map.py
-missing module named 'pkg_resources.extern.pyparsing' - imported by pkg_resources._vendor.packaging.requirements, pkg_resources._vendor.packaging.markers
+missing module named 'pkg_resources.extern.pyparsing' - imported by pkg_resources._vendor.packaging.markers, pkg_resources._vendor.packaging.requirements
 missing module named 'com.sun' - imported by pkg_resources._vendor.appdirs
 missing module named com - imported by pkg_resources._vendor.appdirs
 missing module named twisted - imported by _pytest.unittest
@@ -280,7 +280,7 @@ missing module named psutil._psutil_posix - imported by psutil, psutil._pslinux,
 missing module named _psutil_linux - imported by psutil, C:\Users\conce\OneDrive\Documents\Wireless SDP\Wireless-SDP\Map GUI\Map.py
 missing module named psutil._psutil_osx - imported by psutil, psutil._psosx, C:\Users\conce\OneDrive\Documents\Wireless SDP\Wireless-SDP\Map GUI\Map.py
 missing module named psutil._psutil_bsd - imported by psutil, psutil._psbsd, C:\Users\conce\OneDrive\Documents\Wireless SDP\Wireless-SDP\Map GUI\Map.py
-missing module named 'org.python' - imported by pickle, xml.sax, setuptools.sandbox, C:\Users\conce\OneDrive\Documents\Wireless SDP\Wireless-SDP\Map GUI\Map.py
+missing module named org - imported by pickle, C:\Users\conce\OneDrive\Documents\Wireless SDP\Wireless-SDP\Map GUI\Map.py
 missing module named readline - imported by cmd, code, pdb, pstats, C:\Users\conce\OneDrive\Documents\Wireless SDP\Wireless-SDP\Map GUI\Map.py, _pytest.capture
 excluded module named _frozen_importlib - imported by importlib, importlib.abc, PyInstaller.loader.pyimod02_archive, C:\Users\conce\OneDrive\Documents\Wireless SDP\Wireless-SDP\Map GUI\Map.py
 missing module named _frozen_importlib_external - imported by importlib._bootstrap, importlib, importlib.abc, C:\Users\conce\OneDrive\Documents\Wireless SDP\Wireless-SDP\Map GUI\Map.py
@@ -293,7 +293,7 @@ missing module named urllib.pathname2url - imported by urllib, PyInstaller.lib.m
 missing module named urllib.splittag - imported by urllib, setuptools.py26compat, C:\Users\conce\OneDrive\Documents\Wireless SDP\Wireless-SDP\Map GUI\Map.py
 missing module named grp - imported by shutil, tarfile, pathlib, distutils.archive_util, pathlib2, C:\Users\conce\OneDrive\Documents\Wireless SDP\Wireless-SDP\Map GUI\Map.py, py._path.local
 missing module named _dummy_threading - imported by dummy_threading, C:\Users\conce\OneDrive\Documents\Wireless SDP\Wireless-SDP\Map GUI\Map.py
-missing module named org - imported by copy, C:\Users\conce\OneDrive\Documents\Wireless SDP\Wireless-SDP\Map GUI\Map.py
+missing module named 'org.python' - imported by copy, xml.sax, setuptools.sandbox, C:\Users\conce\OneDrive\Documents\Wireless SDP\Wireless-SDP\Map GUI\Map.py
 missing module named psutil._psutil_sunos - imported by psutil, psutil._pssunos, C:\Users\conce\OneDrive\Documents\Wireless SDP\Wireless-SDP\Map GUI\Map.py
 missing module named ImageFilter - imported by scipy.misc.pilutil
 missing module named Image - imported by scipy.misc.pilutil

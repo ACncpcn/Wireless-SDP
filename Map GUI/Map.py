@@ -55,35 +55,16 @@ class CoreMap(QThread):
         verts0 = [(0,0)]
         verts1 = [(0,0)]
         
-        # total steps
+        # total steps stored in vector
         totes = [(0)for i in range(ntr)]
         
-        '''
-        
-        fig1 = plt.figure()
-        fig1.suptitle('live updated data', fontsize='18', fontweight='bold')
-        #plt.xlabel('time, seconds', fontsize='14', fontstyle='italic')
-        #plt.ylabel('potential, volts', fontsize='14', fontstyle='italic')
-        plt.axes().grid(True)
-        line1, = plt.plot(accel[0],marker='o',markersize=9,linestyle='none',markerfacecolor='red')
-        line2, = plt.plot(accel[1],marker='o',markersize=9,linestyle='none',markerfacecolor='blue')
-        ax = fig1.add_subplot(111)
-        plt.ylim(mrange)
-        plt.xlim(mrange)
-        '''
-        
         # get step length
-        
         self.feet
         self.inch
         
         totinch = self.feet*12 + self.inch
         stridelen = totinch * .41
         stepsize = stridelen * 0.0254
-    
-        
-        #stepsize = 0.5
-        
         
         # correction offset
         accelcor = np.array([0,0])  
@@ -96,16 +77,21 @@ class CoreMap(QThread):
         start_time = time()
         calib_tim = 10 #20
         
-        #print('calibrating')
-        
+        # calibration        
         while (time() <= start_time + calib_tim):
             #just read data to get calibration moving
             self.ser.reset_input_buffer()
             data = self.ser.readline()
             data = data.decode().split() # parse data 
-        
-            client = int(data[3])
-            itst[client] = itst[client] + 1
+            
+            try:
+                # get current transmitter number
+                client = int(data[3])
+                itst[client] = itst[client] + 1
+            except:
+                # if current trasnmitter is incorrect data type there has been
+                # an error in transmission and we pass to next transmission
+                pass
         
             # % done
             percent = (time() - start_time) / (calib_tim)
@@ -139,19 +125,13 @@ class CoreMap(QThread):
                 accelforcor[client] = accelforcor[client] + float(data[2])
                 i[client] = i[client] + 1
                 
-        #print()
         
         # Average calibration data to find offsets for each transmitter
         anglecor = anglecor/i        
         accelcor = accelcor/i
         accelforcor = accelforcor/i
         
-        #print(i)
-        #print(anglecor)
-        #print(accelcor)
-        #print(accelforcor)
-        
-        #print('calibrating done')
+        # reset start time to use as reference for next loop
         start_time = time()
         
         run =  True
@@ -160,16 +140,11 @@ class CoreMap(QThread):
         # collect the data and plot a moving frame. When this loop stops, the map stops
         while run:
             run2 = True
-            #start2 = time()
             startind = ind*1
-            #print(time())
             
+            # count of iterations taken in next loop
             iloop = [0,0]
-            
-            # % done
-            #percent = (int(time() - start_time)) / (duration)
-            #print("Progress {:2.0%}".format(percent), end="\r")
-            
+
             # Loop to get a chunk of data to later process
             while run2:
                 
@@ -187,7 +162,6 @@ class CoreMap(QThread):
                 try:                      
                     # store the entire dataset for later
                     client = int(data[3]) # the address of current transmitter data
-                    #print(client)
                     accel[client].append(float(data[1]) - accelcor[client]) #acceleration up/down
                     angle[client].append(float(data[0]) - anglecor[client]) #angle 
                     accelfor[client].append(float(data[2]) - accelforcor[client]) # acceleration forward/backward
@@ -198,19 +172,15 @@ class CoreMap(QThread):
                     # Get time at end of cycle to know whether to stop outer loop
                     if client == 0: 
                         timepoints.append(time()-start_time)
-                        #current_time = timepoints[-1]
         
                     # when time's up, kill the collect loop
-                    # kill run2 when we gather at least 3 samples from both transmitters
-                    #if timepoints[-1] > duration: run=False
+                    # kill run2 when we gather at least 5 samples from both transmitters
                     if (iloop[0] >= 5) & (iloop[1] >= 5): run2 = False
                         
                     # check if a transmitter has stopped. If samples are 3 behind
                     # zero pad the difference of samples
                     elif (np.amax(iloop) > np.amin(iloop)+10):
                         troff = np.argmin(iloop) # transmitter that turned off
-                        #print('Transmitter %d has stopped working' % troff)
-                        #input('Press Enter when you have reconnected transmitter')
                         
                         # Don't move on until pop up message is dismissed
                         self.err_line.emit(troff) 
@@ -219,6 +189,7 @@ class CoreMap(QThread):
                             pass
                         
                         npad = np.amax(iloop) - np.amin(iloop)
+                        
                         for i in range(npad):
                             # zero pad the missed data, append timepoints
                             accel[troff].append(0)
@@ -238,8 +209,6 @@ class CoreMap(QThread):
                     ind[client] = ind[client] + 1
                 else: # This is reached after first dataset so change initial to count loops
                     initial[client] = 1
-                #print(ind)
-                #print(startind)
                 
             overlap = 1 # frame overlap
         
@@ -293,25 +262,8 @@ class CoreMap(QThread):
                     #print('Angle: ' + str(anglestep))
                     x[i] = direction*stepsize*np.cos(np.deg2rad(anglestep)) + x[i]
                     y[i] = direction*stepsize*np.sin(np.deg2rad(anglestep)) + y[i]
-                '''
-                #print('%f %f'%(x,y))
-            line1.set_xdata(x[0])
-            line1.set_ydata(y[0])
-            line2.set_xdata(x[1])
-            line2.set_ydata(y[1])
-                #fig1.canvas.draw()
-            #print('-----')
-            #print(x[1])
-            #print('--x--')
-            verts0.append((x[0],y[0]))
-            xs, ys = zip(*verts0)
-            ax.plot(xs, ys, '--', lw=2, color='red', ms=10)
             
-            verts1.append((x[1],y[1]))
-            xs, ys = zip(*verts1)
-            ax.plot(xs, ys, '--', lw=2, color='blue', ms=10)
-            fig1.canvas.draw()
-            '''
+            # get plot coordinates
             verts0.append((x[0],y[0]))
             xs, ys = zip(*verts0)
             verts1.append((x[1],y[1]))
@@ -320,33 +272,26 @@ class CoreMap(QThread):
             # emit signal when it is time to update map with coordinates
             # xs is for path history and x[0] is for current position marker
             self.add_data.emit([xs, ys, xs1, ys1, x[0], y[0], x[1], y[1]])
-            
-        #print()
-        #ser.close()
+
 
 class ExampleApp(QtWidgets.QMainWindow, Layout.Ui_MainWindow):
     def __init__(self):
         super(self.__class__, self).__init__()
         self.setupUi(self)  # This is defined in design.py file automatically
         # It sets up layout and widgets that are defined
-        self.StartToggle.toggled.connect(self.Wait)  # change stream status if toggled
-        #self.Clear.clicked.connect(self.clear_list)        # clear window 
-        
+        self.StartToggle.toggled.connect(self.Wait)  # change stream status if toggled        
 
-        
+        # default COM port is COM3
         self.Com3Action.setChecked(True)
-        #print(Com1Action.isChecked())
-
+        self.Com = ("COM3")
+        
+        # if user changes com port menu option go to serchoose
         self.ComAction.triggered.connect(self.serchoose)
-        '''
-        self.Com2Action.toggled.connect(self.serchoose2)
-        self.Com3Action.toggled.connect(self.serchoose3)
-        self.Com4Action.toggled.connect(self.serchoose4)
-        self.Com5Action.toggled.connect(self.serchoose5)'''
-
 
         
     def serchoose(self):
+        ''' Select which com port to open'''\
+        
         if (self.Com1Action.isChecked() == 1):
             self.Com = "COM1"
         elif (self.Com2Action.isChecked() == 1):
@@ -367,46 +312,61 @@ class ExampleApp(QtWidgets.QMainWindow, Layout.Ui_MainWindow):
         
         # run if user selects to start mapping
         if self.StartToggle.isChecked() == 1:
-            
-            # input dialog to get user height
-            text1, feetinput = QInputDialog.getInt(self, 'Settings', 'Enter feet: ')
-            
-            if feetinput == True:
-                text2, inchinput = QInputDialog.getInt(self, 'Settings', 'Enter inches: ')
-                if inchinput == True:
-                    
-                    # start serial communication with com port chosen prior
-                    self.ser = serial.Serial(self.Com, 9600)
     
+            try:
+                # start serial communication with com port chosen prior
+                self.ser = serial.Serial(self.Com, 9600)    
+            
+                # input dialog to get user height
+                text1, feetinput = QInputDialog.getInt(self, 'Settings', 'Enter feet: ')
                 
-                    self.openWindow()
-                    self.pbar.setMinimum(0)
-                    self.pbar.setMaximum(100)
-                    self.pbar.setValue(0)
-        
-                    # initialize map thread
-                    self.map_thread = CoreMap(self.ser)
+                if feetinput == True:
+                    text2, inchinput = QInputDialog.getInt(self, 'Settings', 'Enter inches: ')
+                    if inchinput == True:
+                        
+    
+                            
                     
-                    # send feet and inch input values to map thread
-                    self.map_thread.feet = feetinput 
-                    self.map_thread.inch = inchinput
-                    
-                    # add signal. When signal fires go to plot data
-                    self.map_thread.add_data.connect(self.Plot)
-                    
-                    # when error signal fires pop up error message
-                    self.map_thread.err_line.connect(self.errormsg)
-                    
-                    self.map_thread.calib_line.connect(self.progbar)
-                    
-                    self.map_thread.start() #begin running CoreMap
+                        self.openWindow()
+                        self.pbar.setMinimum(0)
+                        self.pbar.setMaximum(100)
+                        self.pbar.setValue(0)
+            
+                        # initialize map thread
+                        self.map_thread = CoreMap(self.ser)
+                        
+                        # send feet and inch input values to map thread
+                        self.map_thread.feet = feetinput 
+                        self.map_thread.inch = inchinput
+                        
+                        # add signal. When signal fires go to plot data
+                        self.map_thread.add_data.connect(self.Plot)
+                        
+                        # when error signal fires pop up error message
+                        self.map_thread.err_line.connect(self.errormsg)
+                        
+                        self.map_thread.calib_line.connect(self.progbar)
+                        
+                        self.map_thread.start() #begin running CoreMap
+                    else:
+                        self.close()
                 else:
                     self.close()
-            else:
-                self.close()
+            
+            # if com port can not be opened show warning message and don't map
+            except:
+                self.StartToggle.setChecked(False) # unselect start button
+                msg = QtWidgets.QMessageBox() 
+                msg.setIcon(QtWidgets.QMessageBox.Warning)
+                text = self.Com + " is not available"
+                msg.setText(text)
+                msg.setWindowTitle("COM Port Error")
+                msg.exec_()
+       
+        # if start button is toggled off
         else:
             self.map_thread.disconnect() # disconnect thread
-            self.ser.close()
+            self.ser.close() # close serial communication
                 
     
     def Plot(self, data):
@@ -420,13 +380,13 @@ class ExampleApp(QtWidgets.QMainWindow, Layout.Ui_MainWindow):
         ax.grid(True)
         
         # map limits
-        mrange = [-10, 10] # map range
-        yrange = [-10,10]
+        mrange = [-1, 1] # map range
+        yrange = [-1,1]
         ax.set_xlim(mrange)
         ax.set_ylim(yrange)
         
-        # data is vector
-        x , y , x1, y1, xp, yp, xp1, yp1= data
+        # data is vector that is emitted from run
+        x , y , x1, y1, xp, yp, xp1, yp1 = data
         
         # plot data
         ax.set_title('Map')
@@ -440,7 +400,7 @@ class ExampleApp(QtWidgets.QMainWindow, Layout.Ui_MainWindow):
         
     def errormsg(self, errtr):
         '''errtr is passed from CoreMap when a transmitter is disconnected. errtr
-        gives which transmitter is disconnected. A warning window pop ups
+        gives which transmitter is disconnected. A warning window pop ups.
         '''
         
         # Warning Message
@@ -455,6 +415,8 @@ class ExampleApp(QtWidgets.QMainWindow, Layout.Ui_MainWindow):
         self.map_thread.Pause = False
         
     def progbar(self, value):
+        ''' set progress bar percent value'''
+        
         self.pbar.setValue(value)
         
         if int(value) == 100:
